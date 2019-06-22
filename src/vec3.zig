@@ -98,7 +98,7 @@ fn Vec3(comptime T: type) type {
 
         /// Divide `self` by `o` component-wise in-place
         pub fn component_div_ip(self: *Vec3(T), o: Vec3(T)) Vec3(T) {
-            for (self.*.a[0..2]) |*v, i| v.* /= o.a[i];
+            for (self.*.a[0..3]) |*v, i| v.* /= o.a[i];
             return self.*;
         }
 
