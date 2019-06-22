@@ -12,8 +12,8 @@ fn Vec3(comptime T: type) type {
         @compileError("Vec3 only implemented for f32 and f64");
     }
 
-    return packed struct {
-        pub a: [3]T,
+    return struct {
+        pub data: [3]T,
 
         pub const ZERO = Vec3(T).init(0.0, 0.0, 0.0);
         pub const X_AXIS = Vec3(T).init(1.0, 0.0, 0.0);
@@ -25,14 +25,14 @@ fn Vec3(comptime T: type) type {
         /// Initialize new vec3
         pub fn init(x_val: T, y_val: T, z_val: T) Vec3(T) {
             return Vec3(T){
-                .a = [3]T{x_val, y_val, z_val},
+                .data = [3]T{x_val, y_val, z_val},
             };
         }
 
         /// Create new vec3 from an array
         pub fn from_array(arr: [3]T) Vec3(T) {
             return Vec3(T){
-                .a = arr,
+                .data = arr,
             };
         }
 
@@ -51,30 +51,35 @@ fn Vec3(comptime T: type) type {
 
         /// Copy a vec3
         pub fn copy(self: Vec3(T)) Vec3(T) {
-            return Vec3(T).from_array(self.a);
+            return Vec3(T).from_array(self.data);
         }
 
         ///// Accessors /////
 
         /// Get x component of `self`
         pub fn x(self: Vec3(T)) T {
-            return self.a[0];
+            return self.data[0];
         }
 
         /// Get y component of `self`
         pub fn y(self: Vec3(T)) T {
-            return self.a[1];
+            return self.data[1];
         }
 
         /// Get z component of `self`
         pub fn z(self: Vec3(T)) T {
-            return self.a[2];
+            return self.data[2];
+        }
+
+        /// Get vec2 repreesntation of `self`
+        pub fn vec2(self: Vec3(T)) Vec2(T) {
+            return Vec2(T).from_slice(self.data[0..2]);
         }
 
         /// Get square magnitude (length) of `self`
         pub fn mag_sq(self: Vec3(T)) T {
             var sum: T = 0.0;
-            for (self.a[0..3]) |v| sum += v * v;
+            for (self.data) |v| sum += v * v;
             return sum;
         }
 
@@ -87,7 +92,7 @@ fn Vec3(comptime T: type) type {
 
         /// Add `o` to `self` in-place
         pub fn add_ip(self: *Vec3(T), o: Vec3(T)) Vec3(T) {
-            for (self.*.a[0..2]) |*v, i| v.* += o.a[i];
+            for (self.*.data) |*v, i| v.* += o.data[i];
             return self.*;
         }
 
@@ -98,7 +103,7 @@ fn Vec3(comptime T: type) type {
 
         /// Divide `self` by `o` component-wise in-place
         pub fn component_div_ip(self: *Vec3(T), o: Vec3(T)) Vec3(T) {
-            for (self.*.a[0..3]) |*v, i| v.* /= o.a[i];
+            for (self.*.data) |*v, i| v.* /= o.data[i];
             return self.*;
         }
 
@@ -109,7 +114,7 @@ fn Vec3(comptime T: type) type {
 
         /// Perform component-wise maximum between `self` and `o` in-place
         pub fn component_max_ip(self: *Vec3(T), o: Vec3(T)) Vec3(T) {
-            for (self.*.a[0..3]) |*v, i| v.* = math.max(v.*, o.a[i]);
+            for (self.*.data) |*v, i| v.* = math.max(v.*, o.data[i]);
             return self.*;
         }
 
@@ -120,7 +125,7 @@ fn Vec3(comptime T: type) type {
 
         /// Perform component-wise minimum between `self` and `o` in-place
         pub fn component_min_ip(self: *Vec3(T), o: Vec3(T)) Vec3(T) {
-            for (self.*.a[0..3]) |*v, i| v.* = math.min(v.*, o.a[i]);
+            for (self.*.data) |*v, i| v.* = math.min(v.*, o.data[i]);
             return self.*;
         }
 
@@ -131,7 +136,7 @@ fn Vec3(comptime T: type) type {
 
         /// Multiply `self` by `o` component-wise in-place
         pub fn component_mul_ip(self: *Vec3(T), o: Vec3(T)) Vec3(T) {
-            for (self.*.a[0..3]) |*v, i| v.* *= o.a[i];
+            for (self.*.data) |*v, i| v.* *= o.data[i];
             return self.*;
         }
 
@@ -142,8 +147,8 @@ fn Vec3(comptime T: type) type {
 
         /// Cross-multiply `self` with `o` in-place
         pub fn cross_ip(self: *Vec3(T), o: Vec3(T)) Vec3(T) {
-            var sa = self.*.a[0..3];
-            const oa = o.a[0..3];
+            var sa = self.*.data;
+            const oa = o.data;
             sa[0] = sa[1] * oa[2] - sa[2] * oa[1];
             sa[1] = sa[2] * oa[0] - sa[0] * oa[2];
             sa[2] = sa[0] * oa[1] - sa[1] * oa[0];
@@ -158,19 +163,19 @@ fn Vec3(comptime T: type) type {
         /// Get the dot product of `self` and `o`
         pub fn dot(self: Vec3(T), o: Vec3(T)) T {
             var sum: T = 0.0;
-            for (self.a[0..3]) |v, i| sum += v * o.a[i];
+            for (self.data) |v, i| sum += v * o.data[i];
             return sum;
         }
 
         /// Check if `self` and `o` are equal
         pub fn equals(self: Vec3(T), o: Vec3(T)) bool {
-            for (self.a[0..3]) |v, i| if (v != o.a[i]) return false;
+            for (self.data) |v, i| if (v != o.data[i]) return false;
             return true;
         }
 
         /// Check if `self` and `o` are equal to within a degree of confidence delta, `eps`.
         pub fn equals_eps(self: Vec3(T), o: Vec3(T), eps: T) bool {
-            for (self.a[0..3]) |v, i| if (!root.equals_eps(T, v, o.a[i], eps)) return false;
+            for (self.data) |v, i| if (!root.equals_eps(T, v, o.data[i], eps)) return false;
             return true;
         }
 
@@ -264,7 +269,7 @@ fn Vec3(comptime T: type) type {
 
         /// Scale self by `c` in-place.
         pub fn scale_ip(self: *Vec3(T), c: T) Vec3(T) {
-            for (self.*.a[0..3]) |*v, i| v.* *= c;
+            for (self.*.data) |*v, i| v.* *= c;
             return self.*;
         }
 
@@ -285,7 +290,7 @@ fn Vec3(comptime T: type) type {
 
         /// Subtract `o` from `self` in-place
         pub fn sub_ip(self: *Vec3(T), o: Vec3(T)) Vec3(T) {
-            for (self.*.a[0..3]) |*v, i| v.* -= o.a[i];
+            for (self.*.data) |*v, i| v.* -= o.data[i];
             return self.*;
         }
 
@@ -298,7 +303,7 @@ fn Vec3(comptime T: type) type {
 
 const assert = std.debug.assert;
 
-test "vec3 equals" {
+test "vec3.equals" {
     const a = vec3.init(1.0, 2.0, 3.0);
     const b = vec3.init(1.0, 2.0, 3.0);
     const c = vec3.init(2.0, 2.0, 2.0);
@@ -306,83 +311,83 @@ test "vec3 equals" {
     assert(a.equals(c) == false);
 }
 
-test "vec3 add" {
+test "vec3.add" {
     const a = vec3.init(1.0, 2.0, 3.0);
     const b = vec3.init(3.0, 2.0, 1.0);
     assert(a.add(b).equals(vec3.init(4.0, 4.0, 4.0)));
     assert(a.add(b).add(a).equals(vec3.init(5.0, 6.0, 7.0)));
 }
 
-test "vec3 sub" {
+test "vec3.sub" {
     const a = vec3.init(3.0, 2.0, 1.0);
     const b = vec3.init(1.0, 1.0, 1.0);
     assert(a.sub(b).equals(vec3.init(2.0, 1.0, 0.0)));
     assert(a.sub(b).sub(a).equals(vec3.init(-1.0, -1.0, -1.0)));
 }
 
-test "vec3 component_max" {
+test "vec3.component_max" {
     const a = vec3.init(1.0, 2.0, 4.0);
     const b = vec3.init(3.0, 1.0, 3.5);
     assert(a.component_max(b).equals(vec3.init(3.0, 2.0, 4.0)));
 }
 
-test "vec3 component_min" {
+test "vec3.component_min" {
     const a = vec3.init(1.0, 2.0, 4.0);
     const b = vec3.init(3.0, 1.0, 3.5);
     assert(a.component_min(b).equals(vec3.init(1.0, 1.0, 3.5)));
 }
 
-test "vec3 compoment_div" {
+test "vec3.compoment_div" {
     const a = vec3.init(8.0, 10.0, 12.0);
     const b = vec3.init(4.0, 5.0, 6.0);
     assert(a.component_div(b).equals(vec3.init(2.0, 2.0, 2.0)));
 }
 
-test "vec3 component_mul" {
+test "vec3.component_mul" {
     const a = vec3.init(5.0, 6.0, 7.0);
     const b = vec3.init(3.0, 5.0, 4.0);
     assert(a.component_mul(b).equals(vec3.init(15.0, 30.0, 28.0)));
 }
 
-test "vec3 scale" {
+test "vec3.scale" {
     const a = vec3.init(5.0, 6.0, 7.0);
     assert(a.scale(3.0).equals(vec3.init(15.0, 18.0, 21.0)));
 }
 
-test "vec3 invert" {
+test "vec3.invert" {
     const a = vec3.init(3.0, 3.0, 2.0);
     assert(a.invert().equals(vec3.init(-3.0, -3.0, -2.0)));
 }
 
 test "vec3 mag magSq" {
     const a = vec3.init(2.0, 3.0, 4.0);
-    assert(a.mag_sq() == 27.0);
-    assert(a.mag() == math.sqrt(27.0));
+    assert(a.mag_sq() == 29.0);
+    assert(a.mag() == math.sqrt(29.0));
 }
 
-test "vec3 set_mag" {
+test "vec3.set_mag" {
     const a = vec3.init(2.0, 3.0, 4.0);
     assert(root.equals_eps(f32, a.set_mag(3.0).mag(), 3.0, 0.0001));
 }
 
-test "vec3 dot" {
+test "vec3.dot" {
     const a = vec3.init(2.0, 3.0, 5.0);
     const b = vec3.init(3.0, 4.0, 1.0);
     assert(a.dot(b) == 23.0);
 }
 
-test "vec3 normalize" {
+test "vec3.normalize" {
     const a = vec3.init(2.0, 2.0, 2.0);
     assert(a.normalize().equals_eps(vec3.init(math.sqrt(1.0/3.0), math.sqrt(1.0/3.0), math.sqrt(1.0/3.0)), 0.0001));
 }
 
-test "vec3 project" {
+test "vec3.project" {
     const a = vec3.init(1.0, 2.0, 3.0);
     const b = vec3.init(0.0, 1.0, 0.0);
     assert(a.project(b).equals(vec3.init(0.0, 2.0, 0.0)));
 }
 
-test "vec3 reflect" {
+test "vec3.reflect" {
     {
         const incident = vec3.init(1.0, -1.0, 1.0);
         const norm = vec3.init(0.0, 1.0, 0.0);
@@ -395,7 +400,7 @@ test "vec3 reflect" {
     }
 }
 
-test "vec3 refract" {
+test "vec3.refract" {
     {
         const incident = vec3.init(1.0, -1.0, 1.0);
         const norm = vec3.init(0.0, 1.0, 0.0);
@@ -409,4 +414,10 @@ test "vec3 refract" {
         const pass = vec3.from_vec2(vec2.from_angle(-math.pi / 2.0 + 0.49088268), 0.0);
         assert(incident.refract(norm, eta).?.equals_eps(pass, 0.0001));
     }
+}
+
+test "vec3.vec2" {
+    const a = vec3.init(3.0, 2.0, 1.0);
+    const b = vec2.init(3.0, 2.0);
+    assert(a.vec2().equals(b));
 }

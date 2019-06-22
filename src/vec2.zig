@@ -11,8 +11,8 @@ pub fn Vec2(comptime T: type) type {
         @compileError("Vec2 only implemented for f32 and f64");
     }
 
-    return packed struct {
-        pub a: [2]T,
+    return struct {
+        pub data: [2]T,
 
         pub const ZERO = Vec2(T).init(0.0, 0.0);
         pub const X_AXIS = Vec2(T).init(1.0, 0.0);
@@ -23,14 +23,15 @@ pub fn Vec2(comptime T: type) type {
         /// Initialize new vec2
         pub fn init(x_val: T, y_val: T) Vec2(T) {
             return Vec2(T){
-                .a = [2]T{x_val, y_val},
+                .data = [2]T{x_val, y_val},
             };
         }
 
         /// Create new vec2 from an array
-        pub fn from_array(arr: [2]T) Vec2(T) {
+        pub fn from_slice(s: []const T) Vec2(T) {
+            assert(s.len == 2);
             return Vec2(T){
-                .a = arr,
+                .data = [2]f32{s[0], s[1]}
             };
         }
 
@@ -41,25 +42,25 @@ pub fn Vec2(comptime T: type) type {
 
         /// Copy a vec2
         pub fn copy(self: Vec2(T)) Vec2(T) {
-            return Vec2(T).from_array(self.a);
+            return Vec2(T).from_slice(self.data[0..]);
         }
 
         ///// Accessors /////
 
         /// Get x component of `self`
         pub fn x(self: Vec2(T)) T {
-            return self.a[0];
+            return self.data[0];
         }
 
         /// Get y component of `self`
         pub fn y(self: Vec2(T)) T {
-            return self.a[1];
+            return self.data[1];
         }
 
         /// Get square magnitude (length) of `self`
         pub fn mag_sq(self: Vec2(T)) T {
             var sum: T = 0.0;
-            for (self.a[0..2]) |v| sum += v * v;
+            for (self.data) |v| sum += v * v;
             return sum;
         }
 
@@ -77,9 +78,10 @@ pub fn Vec2(comptime T: type) type {
 
         /// Add `o` to `self` in-place
         pub fn add_ip(self: *Vec2(T), o: Vec2(T)) Vec2(T) {
-            for (self.*.a[0..2]) |*v, i| v.* += o.a[i];
+            for (self.*.data) |*v, i| v.* += o.data[i];
             return self.*;
         }
+
         /// Add `o` to `self` and return result
         pub fn add(self: Vec2(T), o: Vec2(T)) Vec2(T) {
             return self.copy().add_ip(o);
@@ -87,7 +89,7 @@ pub fn Vec2(comptime T: type) type {
 
         /// Divide `self` by `o` component-wise in-place
         pub fn component_div_ip(self: *Vec2(T), o: Vec2(T)) Vec2(T) {
-            for (self.*.a[0..2]) |*v, i| v.* /= o.a[i];
+            for (self.*.data) |*v, i| v.* /= o.data[i];
             return self.*;
         }
 
@@ -98,7 +100,7 @@ pub fn Vec2(comptime T: type) type {
 
         /// Perform component-wise maximum between `self` and `o` in-place
         pub fn component_max_ip(self: *Vec2(T), o: Vec2(T)) Vec2(T) {
-            for (self.*.a[0..2]) |*v, i| v.* = math.max(v.*, o.a[i]);
+            for (self.*.data) |*v, i| v.* = math.max(v.*, o.data[i]);
             return self.*;
         }
 
@@ -109,7 +111,7 @@ pub fn Vec2(comptime T: type) type {
 
         /// Perform component-wise minimum between `self` and `o` in-place
         pub fn component_min_ip(self: *Vec2(T), o: Vec2(T)) Vec2(T) {
-            for (self.*.a[0..2]) |*v, i| v.* = math.min(v.*, o.a[i]);
+            for (self.*.data) |*v, i| v.* = math.min(v.*, o.data[i]);
             return self.*;
         }
 
@@ -120,7 +122,7 @@ pub fn Vec2(comptime T: type) type {
 
         /// Multiply `self` by `o` component-wise in-place
         pub fn component_mul_ip(self: *Vec2(T), o: Vec2(T)) Vec2(T) {
-            for (self.*.a[0..2]) |*v, i| v.* *= o.a[i];
+            for (self.*.data) |*v, i| v.* *= o.data[i];
             return self.*;
         }
 
@@ -132,19 +134,19 @@ pub fn Vec2(comptime T: type) type {
         /// Get the dot product of `self` and `o`
         pub fn dot(self: Vec2(T), o: Vec2(T)) T {
             var sum: T = 0.0;
-            for (self.a[0..2]) |v, i| sum += v * o.a[i];
+            for (self.data) |v, i| sum += v * o.data[i];
             return sum;
         }
 
         /// Check if `self` and `o` are equal
         pub fn equals(self: Vec2(T), o: Vec2(T)) bool {
-            for (self.a[0..2]) |v, i| if (v != o.a[i]) return false;
+            for (self.data) |v, i| if (v != o.data[i]) return false;
             return true;
         }
 
         /// Check if `self` and `o` are equal to within a degree of confidence delta, `eps`.
         pub fn equals_eps(self: Vec2(T), o: Vec2(T), eps: T) bool {
-            for (self.a[0..2]) |v, i| if (!root.equals_eps(T, v, o.a[i], eps)) return false;
+            for (self.data) |v, i| if (!root.equals_eps(T, v, o.data[i], eps)) return false;
             return true;
         }
 
@@ -238,7 +240,7 @@ pub fn Vec2(comptime T: type) type {
 
         /// Scale self by `c` in-place.
         pub fn scale_ip(self: *Vec2(T), c: T) Vec2(T) {
-            for (self.*.a[0..2]) |*v, i| v.* *= c;
+            for (self.*.data) |*v, i| v.* *= c;
             return self.*;
         }
 
@@ -259,7 +261,7 @@ pub fn Vec2(comptime T: type) type {
 
         /// Subtract `o` from `self` in-place
         pub fn sub_ip(self: *Vec2(T), o: Vec2(T)) Vec2(T) {
-            for (self.*.a[0..2]) |*v, i| v.* -= o.a[i];
+            for (self.*.data) |*v, i| v.* -= o.data[i];
             return self.*;
         }
 
@@ -272,7 +274,7 @@ pub fn Vec2(comptime T: type) type {
 
 const assert = std.debug.assert;
 
-test "vec2 equals" {
+test "vec.equals" {
     const a = vec2.init(1.0, 2.0);
     const b = vec2.init(1.0, 2.0);
     const c = vec2.init(2.0, 2.0);
@@ -280,14 +282,14 @@ test "vec2 equals" {
     assert(a.equals(c) == false);
 }
 
-test "vec2 add" {
+test "vec2.add" {
     const a = vec2.init(1.0, 2.0);
     const b = vec2.init(3.0, 2.0);
     assert(a.add(b).equals(vec2.init(4.0, 4.0)));
     assert(a.add(b).add(a).equals(vec2.init(5.0, 6.0)));
 }
 
-test "vec2 sub" {
+test "vec2.sub" {
     const a = vec2.init(3.0, 2.0);
     const b = vec2.init(1.0, 1.0);
     assert(a.sub(b).equals(vec2.init(2.0, 1.0)));
@@ -303,69 +305,73 @@ test "vec2 angle heading round trip" {
     assert(b.equals_eps(vec2.init(0.5 * math.sqrt(2.0), -0.5 * math.sqrt(2.0)), 0.0001));
 }
 
-test "vec2 component_max" {
+test "vec2.component_max" {
     const a = vec2.init(1.0, 2.0);
     const b = vec2.init(3.0, 1.0);
     assert(a.component_max(b).equals(vec2.init(3.0, 2.0)));
 }
 
-test "vec2 component_min" {
+test "vec2.component_min" {
     const a = vec2.init(1.0, 2.0);
     const b = vec2.init(3.0, 1.0);
     assert(a.component_min(b).equals(vec2.init(1.0, 1.0)));
 }
 
-test "vec2 compoment_div" {
+test "vec2.compoment_div" {
     const a = vec2.init(8.0, 10.0);
     const b = vec2.init(4.0, 5.0);
     assert(a.component_div(b).equals(vec2.init(2.0, 2.0)));
 }
 
-test "vec2 component_mul" {
+test "vec2.component_mul" {
     const a = vec2.init(5.0, 6.0);
     const b = vec2.init(3.0, 5.0);
     assert(a.component_mul(b).equals(vec2.init(15.0, 30.0)));
 }
 
-test "vec2 scale" {
+test "vec2.scale" {
     const a = vec2.init(5.0, 6.0);
     assert(a.scale(3.0).equals(vec2.init(15.0, 18.0)));
 }
 
-test "vec2 invert" {
+test "vec2.invert" {
     const a = vec2.init(3.0, 3.0);
     assert(a.invert().equals(vec2.init(-3.0, -3.0)));
 }
 
-test "vec2 mag magSq" {
+test "vec2.magSq" {
     const a = vec2.init(2.0, 3.0);
     assert(a.mag_sq() == 13.0);
+}
+
+test "vec2.mag" {
+    const a = vec2.init(2.0, 3.0);
     assert(a.mag() == math.sqrt(13.0));
 }
 
-test "vec2 set_mag" {
+test "vec2.set_mag" {
     const a = vec2.init(2.0, 3.0);
     assert(root.equals_eps(f32, a.set_mag(3.0).mag(), 3.0, 0.0001));
 }
 
-test "vec2 dot" {
+test "vec2.dot" {
     const a = vec2.init(2.0, 3.0);
     const b = vec2.init(3.0, 4.0);
     assert(a.dot(b) == 18.0);
 }
 
-test "vec2 normalize" {
+test "vec2.normalize" {
     const a = vec2.init(2.0, 2.0);
     assert(a.normalize().equals_eps(vec2.init(0.5 * math.sqrt(2.0), 0.5 * math.sqrt(2.0)), 0.0001));
 }
 
-test "vec2 project" {
+test "vec2.project" {
     const a = vec2.init(1.0, 2.0);
     const b = vec2.init(0.0, 1.0);
     assert(a.project(b).equals(vec2.init(0.0, 2.0)));
 }
 
-test "vec2 reflect" {
+test "vec2.reflect" {
     {
         const incident = vec2.init(1.0, -1.0);
         const norm = vec2.init(0.0, 1.0);
@@ -378,7 +384,7 @@ test "vec2 reflect" {
     }
 }
 
-test "vec2 refract" {
+test "vec2.refract" {
     {
         const incident = vec2.init(1.0, -1.0);
         const norm = vec2.init(0.0, 1.0);
