@@ -1,6 +1,6 @@
 const std = @import("std");
 
-// pub use @import("vec2.zig");
+pub use @import("vec2.zig");
 pub use @import("vec3.zig");
 
 pub fn equals_eps(comptime T: type, a: f32, b: f32, eps: f32) bool {
