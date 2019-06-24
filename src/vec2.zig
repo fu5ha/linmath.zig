@@ -31,7 +31,7 @@ pub fn Vec2(comptime T: type) type {
         pub fn from_slice(s: []const T) Vec2(T) {
             assert(s.len == 2);
             return Vec2(T){
-                .data = [2]f32{s[0], s[1]}
+                .data = [2]T{s[0], s[1]}
             };
         }
 

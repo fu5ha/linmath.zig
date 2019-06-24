@@ -7,7 +7,7 @@ use @import("vec2.zig");
 pub const vec3 = Vec3(f32);
 pub const vec3_64 = Vec3(f64);
 
-fn Vec3(comptime T: type) type {
+pub fn Vec3(comptime T: type) type {
     if (T != f32 and T != f64) {
         @compileError("Vec3 only implemented for f32 and f64");
     }
@@ -30,9 +30,10 @@ fn Vec3(comptime T: type) type {
         }
 
         /// Create new vec3 from an array
-        pub fn from_array(arr: [3]T) Vec3(T) {
+        pub fn from_slice(s: []const T) Vec3(T) {
+            assert(s.len == 3);
             return Vec3(T){
-                .data = arr,
+                .data = [3]T{s[0], s[1], s[2]}
             };
         }
 
@@ -51,7 +52,7 @@ fn Vec3(comptime T: type) type {
 
         /// Copy a vec3
         pub fn copy(self: Vec3(T)) Vec3(T) {
-            return Vec3(T).from_array(self.data);
+            return Vec3(T).from_slice(self.data[0..3]);
         }
 
         ///// Accessors /////
