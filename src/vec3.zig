@@ -304,7 +304,7 @@ pub fn Vec3(comptime T: type) type {
 
 const assert = std.debug.assert;
 
-test "vec3.equals" {
+test "equals" {
     const a = vec3.init(1.0, 2.0, 3.0);
     const b = vec3.init(1.0, 2.0, 3.0);
     const c = vec3.init(2.0, 2.0, 2.0);
@@ -312,83 +312,87 @@ test "vec3.equals" {
     assert(a.equals(c) == false);
 }
 
-test "vec3.add" {
+test "add" {
     const a = vec3.init(1.0, 2.0, 3.0);
     const b = vec3.init(3.0, 2.0, 1.0);
     assert(a.add(b).equals(vec3.init(4.0, 4.0, 4.0)));
     assert(a.add(b).add(a).equals(vec3.init(5.0, 6.0, 7.0)));
 }
 
-test "vec3.sub" {
+test "sub" {
     const a = vec3.init(3.0, 2.0, 1.0);
     const b = vec3.init(1.0, 1.0, 1.0);
     assert(a.sub(b).equals(vec3.init(2.0, 1.0, 0.0)));
     assert(a.sub(b).sub(a).equals(vec3.init(-1.0, -1.0, -1.0)));
 }
 
-test "vec3.component_max" {
+test "component_max" {
     const a = vec3.init(1.0, 2.0, 4.0);
     const b = vec3.init(3.0, 1.0, 3.5);
     assert(a.component_max(b).equals(vec3.init(3.0, 2.0, 4.0)));
 }
 
-test "vec3.component_min" {
+test "component_min" {
     const a = vec3.init(1.0, 2.0, 4.0);
     const b = vec3.init(3.0, 1.0, 3.5);
     assert(a.component_min(b).equals(vec3.init(1.0, 1.0, 3.5)));
 }
 
-test "vec3.compoment_div" {
+test "compoment_div" {
     const a = vec3.init(8.0, 10.0, 12.0);
     const b = vec3.init(4.0, 5.0, 6.0);
     assert(a.component_div(b).equals(vec3.init(2.0, 2.0, 2.0)));
 }
 
-test "vec3.component_mul" {
+test "component_mul" {
     const a = vec3.init(5.0, 6.0, 7.0);
     const b = vec3.init(3.0, 5.0, 4.0);
     assert(a.component_mul(b).equals(vec3.init(15.0, 30.0, 28.0)));
 }
 
-test "vec3.scale" {
+test "scale" {
     const a = vec3.init(5.0, 6.0, 7.0);
     assert(a.scale(3.0).equals(vec3.init(15.0, 18.0, 21.0)));
 }
 
-test "vec3.invert" {
+test "invert" {
     const a = vec3.init(3.0, 3.0, 2.0);
     assert(a.invert().equals(vec3.init(-3.0, -3.0, -2.0)));
 }
 
-test "vec3 mag magSq" {
+test "magSq" {
     const a = vec3.init(2.0, 3.0, 4.0);
     assert(a.mag_sq() == 29.0);
+}
+
+test "mag" {
+    const a = vec3.init(2.0, 3.0, 4.0);
     assert(a.mag() == math.sqrt(29.0));
 }
 
-test "vec3.set_mag" {
+test "set_mag" {
     const a = vec3.init(2.0, 3.0, 4.0);
     assert(root.equals_eps(f32, a.set_mag(3.0).mag(), 3.0, 0.0001));
 }
 
-test "vec3.dot" {
+test "dot" {
     const a = vec3.init(2.0, 3.0, 5.0);
     const b = vec3.init(3.0, 4.0, 1.0);
     assert(a.dot(b) == 23.0);
 }
 
-test "vec3.normalize" {
+test "normalize" {
     const a = vec3.init(2.0, 2.0, 2.0);
     assert(a.normalize().equals_eps(vec3.init(math.sqrt(1.0/3.0), math.sqrt(1.0/3.0), math.sqrt(1.0/3.0)), 0.0001));
 }
 
-test "vec3.project" {
+test "project" {
     const a = vec3.init(1.0, 2.0, 3.0);
     const b = vec3.init(0.0, 1.0, 0.0);
     assert(a.project(b).equals(vec3.init(0.0, 2.0, 0.0)));
 }
 
-test "vec3.reflect" {
+test "reflect" {
     {
         const incident = vec3.init(1.0, -1.0, 1.0);
         const norm = vec3.init(0.0, 1.0, 0.0);
@@ -401,7 +405,7 @@ test "vec3.reflect" {
     }
 }
 
-test "vec3.refract" {
+test "refract" {
     {
         const incident = vec3.init(1.0, -1.0, 1.0);
         const norm = vec3.init(0.0, 1.0, 0.0);
@@ -417,7 +421,7 @@ test "vec3.refract" {
     }
 }
 
-test "vec3.vec2" {
+test "vec2" {
     const a = vec3.init(3.0, 2.0, 1.0);
     const b = vec2.init(3.0, 2.0);
     assert(a.vec2().equals(b));
